@@ -9,9 +9,9 @@ class Bishop extends Piece
         parent::__construct($x, $y, $color);
     }
 
-    public function Draw()
+    public function __toString()
     {
-        echo '<img src="sprites/' . $this->color . '_bishop.png" />';
+        return '<img src="sprites/' . $this->color . '_bishop.png" />';
     }
 
     public function CanMove()

@@ -1,5 +1,14 @@
-.paw:
+#board
 {
-    background: url(../sprites/pieces.png) 0 0 no-repeat;
+    float: left;
+    width: 48%;
 }
 
+#logs
+{
+    float: left;
+    width: 50%;
+    border: 1px solid black;
+    overflow: auto;
+    height: 850px;
+}

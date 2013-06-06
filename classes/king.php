@@ -9,9 +9,9 @@ class King extends Piece
         parent::__construct($x, $y, $color);
     }
 
-    public function Draw()
+    public function __toString()
     {
-        echo '<img src="sprites/' . $this->color . '_king.png" />';
+        return '<img src="sprites/' . $this->color . '_king.png" />';
     }
 
     public function CanMove()

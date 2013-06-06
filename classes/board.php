@@ -1,11 +1,14 @@
 <?php
 
-class board
+class Board
 {
     private $board;
+    private $turn;
 
     public function __construct()
     {
+        $this->turn = 0;
+        
         for ($x = 0; $x < 8; $x++)
         {
             $piece = null;
@@ -13,9 +16,9 @@ class board
             $this->board[$x] = array();
             for ($y = 0; $y < 8; $y++)
             {
-                if ($x == 0)
+                if ($y == 7)
                 {
-                    switch ($y)
+                    switch ($x)
                     {
                         case 0:
                         case 7:
@@ -30,23 +33,23 @@ class board
                             $piece = new Bishop($x, $y, 0);
                             break;
                         case 3:
-                            $piece = new King($x, $y, 0);
+                            $piece = new Queen($x, $y, 0);
                             break;
                         case 4:
-                            $piece = new Queen($x, $y, 0);
+                            $piece = new King($x, $y, 0);
                             break;
                         default:
                             $piece = null;
                             break;
                     }
                 }
-                else if ($x == 1)
+                else if ($y == 6)
                     $piece = new Pawn($x, $y, 0);
-                else if ($x == 6)
+                else if ($y == 1)
                     $piece = new Pawn($x, $y, 1);
-                else if ($x == 7)
+                else if ($y == 0)
                 {
-                    switch ($y)
+                    switch ($x)
                     {
                         case 0:
                         case 7:
@@ -61,10 +64,10 @@ class board
                             $piece = new Bishop($x, $y, 1);
                             break;
                         case 3:
-                            $piece = new King($x, $y, 1);
+                            $piece = new Queen($x, $y, 1);
                             break;
                         case 4:
-                            $piece = new Queen($x, $y, 1);
+                            $piece = new King($x, $y, 1);
                             break;
                         default:
                             $piece = null;
@@ -88,26 +91,54 @@ class board
          */
 
         echo '<table style="border: 1px solid black;">';
-        for ($x = 0; $x < 8; $x++)
+        
+        for ($y = 7; $y >= 0; $y--)
         {
             echo '<tr>';
-            for ($y = 0; $y < 8; $y++)
+                
+            for ($x = 7; $x >= 0; $x--)
             {
-                echo '<td style="width: 100px; height: 100px; text-align: center; vertical-align: center; border: 1px solid black;">';
+                $blackCell = 'background-color: #e7d0a7';
+                
+                if (($x + $y) % 2 == 1)
+                    $blackCell = 'background-color: #a67e5b;';
+                
+                if (isset($_SESSION['origin']))
+                { 
+                    $origin = unserialize($_SESSION['origin']);
+                
+                    if($this->GetPiece($origin) !== null &&
+                        in_array(new Position($x, $y), $this->GetPiece($origin)->GetPossibleCells()))
+                    {
+                        $blackCell = 'background-color: yellow;';
+                    }
+                }
+                
+                echo '<td style="width: 100px; height: 100px; text-align: center; vertical-align: center; border: 1px solid black;' . $blackCell . '">';
                 echo '[' . $x . ',' . $y . ']<br />';
 
-                if (isset($_SESSION['origin_x']) && isset($_SESSION['origin_y']))
-                    echo '<a href="index.php?action=move_target&x=' . $x . '&y=' . $y . '">';
-                else
-                    echo '<a href="index.php?action=move_origin&x=' . $x . '&y=' . $y . '">';
+                if ($this->board[$x][$y] !== null)
+                {
+                    if (isset($_SESSION['origin']))
+                        echo '<a href="index.php?action=move_target&x=' . $x . '&y=' . $y . '">';
+                    else
+                        echo '<a href="index.php?action=move_origin&x=' . $x . '&y=' . $y . '">';
+                }
                 
                 if ($this->board[$x][$y] !== null)
                 {
-                    $this->board[$x][$y]->Draw();
+                    echo $this->board[$x][$y];
                 }
-                else
-                {
-                    echo 'Click here!';
+                else if (isset($_SESSION['origin']))
+                { 
+                    $origin = unserialize($_SESSION['origin']);
+                
+                    if($this->GetPiece($origin) !== null &&
+                        in_array(new Position($x, $y), $this->GetPiece($origin)->GetPossibleCells()))
+                    {
+                        echo '<a href="index.php?action=move_target&x=' . $x . '&y=' . $y . '">';
+                        echo 'Click here!';
+                    }
                 }
 
                 echo '</a>';
@@ -119,10 +150,71 @@ class board
         echo '</table>';
     }
     
-    public function Move($origin_x, $origin_y, $target_x, $target_y)
+    public function Move($origin, $target)
     {
-        $this->board[$target_x][$target_y] = $this->board[$origin_x][$origin_y];
-        $this->board[$origin_x][$origin_y] = null;
-    }
+        if (in_array($target, $this->GetPiece($origin)->GetPossibleCells()))
+        {
+            $this->board[$target->x][$target->y] = $this->GetPiece($origin);
+            $this->board[$origin->x][$origin->y] = null;
+            $this->board[$target->x][$target->y]->SetPosition($target);
 
+            return true;
+        }
+        else
+            return false;
+    }
+    
+    public function NextTurn()
+    {
+        $this->turn = ($this->turn + 1) % 2;
+    }
+    
+    public function DisplayTurn()
+    {
+        if ($this->turn == 0)
+            echo 'Au tour du joueur blanc !';
+        else if ($this->turn == 1)
+            echo 'Au tour du joueur noir !';
+    }
+    
+    public function GetTurn()
+    {
+        return $this->turn;
+    }
+    
+    public function GetPiece($position)
+    {
+        return $this->board[$position->x][$position->y];
+    }
+    
+    public function ComputeCollisionBoard($color)
+    {
+        $collisionBoard = array();
+        for($x = 0; $x < 8; $x++)
+        {
+            for($y = 0; $y < 8; $y++)
+            {
+                $position = new Position($x, $y);
+                if ($this->GetPiece($position) == null || $this->GetPiece($position)->GetColor() != $color)
+                {
+                    $collisionBoard[$x][$y] = false;
+                }
+                else
+                    $collisionBoard[$x][$y] = true;
+            }
+        }
+        
+        return $collisionBoard;
+    }
+    
+    public static function Out($position)
+    {
+        if ($position->x > 7 || $position->x < 0 ||
+                $position->y > 7 || $position->y < 0)
+        {
+            return true;
+        }
+        
+        return false;
+    }
 }

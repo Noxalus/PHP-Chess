@@ -9,9 +9,9 @@ class Knight extends Piece
         parent::__construct($x, $y, $color);
     }
 
-    public function Draw()
+    public function __toString()
     {
-        echo '<img src="sprites/' . $this->color . '_knight.png" />';
+        return '<img src="sprites/' . $this->color . '_knight.png" />';
     }
 
     public function CanMove()

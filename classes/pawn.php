@@ -9,13 +9,22 @@ class Pawn extends Piece
         parent::__construct($x, $y, $color);
     }
 
-    public function Draw()
+    public function __toString()
     {
-        echo '<img src="sprites/' . $this->color . '_pawn.png" />';
+        return '<img src="sprites/' . $this->color . '_pawn.png" />';
     }
 
-    public function CanMove()
+    public function ComputePossibleCells($collisionBoard)
     {
+        parent::ComputePossibleCells($collisionBoard);
         
+        $lenght = 1;
+        if (count($this->history) == 0)
+            $lenght = 2;
+        
+        if ($this->color == 0)
+            $lenght *= -1;
+        
+        $this->possibleCells[] = new Position($this->position->x, $this->position->y + $lenght);
     }
 }
