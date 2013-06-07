@@ -21,4 +21,9 @@ class Log
             echo $message . '<br />';
         }
     }
+    
+    public function Clear()
+    {
+        $this->messages = array();
+    }
 }

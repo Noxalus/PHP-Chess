@@ -15,14 +15,9 @@ class Piece
         $this->history = array();
     }
     
-    public function GetX()
+    public function GetPosition()
     {
-        return $this->position->x;
-    }
-    
-    public function GetY()
-    {
-        return $this->position->y;
+        return $this->position;
     }
     
     public function GetColor()
@@ -30,7 +25,7 @@ class Piece
         return $this->color;
     }
     
-    public function ComputePossibleCells($collisionBoard)
+    public function ComputePossibleCells($board)
     {
         $this->possibleCells = array();
     }

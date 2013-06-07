@@ -9,43 +9,35 @@ class Queen extends Piece
         parent::__construct($x, $y, $color);
     }
 
-    public function __toString()
+    public function ComputePossibleCells($board)
     {
-        return '<img src="sprites/' . $this->color . '_queen.png" />';
-    }
-
-    public function ComputePossibleCells($collisionBoard)
-    {
-        parent::ComputePossibleCells($collisionBoard);
-                
-        for ($y = 7; $y >= 0; $y--)
-        {
-            for ($x = 7; $x >= 0; $x--)
-            {
-                if ($collisionBoard[$x][$y])
-                    echo 1;
-                else
-                    echo 0;
-            }
-            
-            echo '<br />';
-        }
+        parent::ComputePossibleCells($board);
+     
+        $collisionBoard = $board->ComputeCollisionBoard($this->color);
         
         for($x = $this->position->x + 1; $x < 8; $x++)
         {
             if (!$collisionBoard[$x][$this->position->y])
             {
                 $this->possibleCells[] = new Position($x, $this->position->y);
+
+                $piece = $board->GetPiece(new Position($x, $this->position->y));
+                if ($piece != null && $piece->GetColor() != $this->color)
+                    break;
             }
             else
                 break;
         }
         
-        for($x = $this->position->x + 1; $x >= 0; $x--)
+        for($x = $this->position->x - 1; $x >= 0; $x--)
         {
             if (!$collisionBoard[$x][$this->position->y])
             {
                 $this->possibleCells[] = new Position($x, $this->position->y);
+                 
+                $piece = $board->GetPiece(new Position($x, $this->position->y));
+                if ($piece != null && $piece->GetColor() != $this->color)
+                    break;
             }
             else
                 break;
@@ -56,6 +48,10 @@ class Queen extends Piece
             if (!$collisionBoard[$this->position->x][$y])
             {
                 $this->possibleCells[] = new Position($this->position->x, $y);
+                
+                $piece = $board->GetPiece(new Position($this->position->x, $y));
+                if ($piece != null && $piece->GetColor() != $this->color)
+                    break;
             }
             else
                 break;
@@ -66,20 +62,86 @@ class Queen extends Piece
             if (!$collisionBoard[$this->position->x][$y])
             {
                 $this->possibleCells[] = new Position($this->position->x, $y);
+
+                $piece = $board->GetPiece(new Position($this->position->x, $y));
+                if ($piece != null && $piece->GetColor() != $this->color)
+                    break;
             }
             else
                 break;
         }
         
-        $position = new Position($this->position->x, $this->position->y);
+        $position = new Position($this->position->x + 1, $this->position->y + 1);
         while(!Board::Out($position))
         {
             if (!$collisionBoard[$position->x][$position->y])
             {
                 $this->possibleCells[] = $position;
+                
+                $piece = $board->GetPiece($position);
+                if ($piece != null && $piece->GetColor() != $this->color)
+                    break;
             }
+            else
+                break;
             
             $position = new Position($position->x + 1, $position->y + 1);
         }
+        
+        $position = new Position($this->position->x - 1, $this->position->y - 1);
+        while(!Board::Out($position))
+        {
+            if (!$collisionBoard[$position->x][$position->y])
+            {
+                $this->possibleCells[] = $position;
+                
+                $piece = $board->GetPiece($position);
+                if ($piece != null && $piece->GetColor() != $this->color)
+                    break;
+            }
+            else
+                break;
+            
+            $position = new Position($position->x - 1, $position->y - 1);
+        }
+        
+        $position = new Position($this->position->x + 1, $this->position->y - 1);
+        while(!Board::Out($position))
+        {
+            if (!$collisionBoard[$position->x][$position->y])
+            {
+                $this->possibleCells[] = $position;
+                
+                $piece = $board->GetPiece($position);
+                if ($piece != null && $piece->GetColor() != $this->color)
+                    break;
+            }
+            else
+                break;
+            
+            $position = new Position($position->x + 1, $position->y - 1);
+        }
+        
+        $position = new Position($this->position->x - 1, $this->position->y + 1);
+        while(!Board::Out($position))
+        {
+            if (!$collisionBoard[$position->x][$position->y])
+            {
+                $this->possibleCells[] = $position;
+                
+                $piece = $board->GetPiece($position);
+                if ($piece != null && $piece->GetColor() != $this->color)
+                    break;
+            }
+            else
+                break;
+            
+            $position = new Position($position->x - 1, $position->y + 1);
+        }
+    }
+    
+    public function __toString()
+    {
+        return '<img src="sprites/' . $this->color . '_queen.png" class="piece" />';
     }
 }
