@@ -5,13 +5,13 @@ require_once 'piece.php';
 class King extends Piece
 {
     private $check;
-    private $checkAtLeastOnce;
+    private $checkNumber;
     public function __construct($x, $y, $color)
     {
         parent::__construct($x, $y, $color);
         
         $this->check = false;
-        $this->checkAtLeastOnce = false;
+        $this->checkNumber = 0;
     }
 
     public function ComputePossibleCells($board)
@@ -26,28 +26,31 @@ class King extends Piece
             {
                 if (!Board::Out(new Position($x, $y)) && !$collisionBoard[$x][$y])
                 {
-                    $this->possibleCells[] = new Position($x, $y);
+                    $position = new Position($x, $y);
+                    
+                    if (!$board->KingCheck($this->GetColor(), $position))
+                        $this->possibleCells[] = $position;
                 }
             }
         }
     }
     
+    public function CheckAtLeastOnce()
+    {
+        return ($this->checkNumber > 0);
+    }
+    
+    public function SetCheck($bool)
+    {
+        if ($bool)
+            $this->checkNumber++;
+        
+        $this->check = $bool;
+    }
+    
     public function InCheck()
     {
         return $this->check;
-    }
-    
-    public function CheckAtLeastOnce()
-    {
-        return $this->checkAtLeastOnce;
-    }
-    
-    public function Check($bool)
-    {
-        if ($bool && !$this->checkAtLeastOnce)
-            $this->checkAtLeastOnce = true;
-        
-        $this->check = $bool;
     }
     
     public function __toString()

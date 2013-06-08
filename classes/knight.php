@@ -23,7 +23,7 @@ class Knight extends Piece
             new Position($this->position->x - 1, $this->position->y - 2),
             new Position($this->position->x - 2, $this->position->y - 1),
             new Position($this->position->x - 2, $this->position->y + 1),
-            new Position($this->position->x - 2, $this->position->y + 1),
+            new Position($this->position->x - 1, $this->position->y + 2),
         );
         
         foreach($positions as $position)

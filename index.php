@@ -122,16 +122,13 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
                     break;
             }
         }
-
-        if (!empty($_GET))
-        {
-            $board->KingCheck();
-        }
         
         if (isset($_GET['clear']) && $_GET['clear'] == 1)
         {
             $logs->Clear();
         }
+        
+        //$board->DisplayPossibleCells(Color::White);
 
         $_SESSION['board'] = serialize($board);
         $_SESSION['logs'] = serialize($logs);
@@ -141,12 +138,12 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
         <?php $board->DrawBoard(); ?>
         </div>
 
-        <div id="logs">
+        <div id="info">
             <p style="text-align: center;">
                 <a href="index.php?reset=1" style="font-weight: bold; font-size: xx-large;">Reset the game !</a><br />
                 <a href="index.php?clear=1" style="font-style: italic;">(Clear logs)</a>
             </p>
-            <br />
+        <div id="logs">
             <?php
             /*
             echo '<pre>';
@@ -156,6 +153,7 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
             $logs->Display();
             ?>
         </div>
-
+        </div>
+        <?php //$board->DisplayPieces(); ?>
     </body>
 </html>

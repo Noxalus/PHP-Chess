@@ -41,6 +41,11 @@ class Piece
         $this->position = $position;
     }
     
+    public function IsFirstMove()
+    {
+        return (count($this->history) == 0);
+    }
+    
     public function __toString()
     {
     }

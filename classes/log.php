@@ -7,18 +7,27 @@ class Log
     public function __construct()
     {
         $this->messages = array();
+        $this->messages[] = '[' . date('Y/m/d h:i:s') . ']---------- Game start ----------';
     }
     
-    public function Add($message)
+    public function Add($message, $date = true)
     {
-        $this->messages[] = '[' . date('Y/m/d h:i:s') . '] ' . $message;
+        $string = '';
+        if ($date)
+            $string .= '[' . date('Y/m/d h:i:s') . '] ';
+        
+        $string .= $message;
+        
+        $this->messages[] = $string;
     }
     
     public function Display()
     {
+        $counter = 0;
         foreach($this->messages as $message)
         {
-            echo $message . '<br />';
+            echo '[' . $counter . ']' . $message . '<br />';
+            $counter++;
         }
     }
     

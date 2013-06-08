@@ -1,3 +1,24 @@
+/* http://meyerweb.com/eric/tools/css/reset/ 
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+body 
+{
+    margin: 0;
+    padding: 0;
+}
+
 #board
 {
     float: left;
@@ -6,11 +27,10 @@
 
 #logs
 {
-    float: left;
     width: 52%;
     border: 1px solid black;
     overflow: auto;
-    height: 898px;
+    height: 821px;
     background-color: white;
 }
 
@@ -22,7 +42,7 @@ a.cell
     margin-top: -20px;
 }
 
-img.piece
+a img.piece
 {
     margin-top: 20px;
 }
