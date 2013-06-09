@@ -7,7 +7,7 @@ class Log
     public function __construct()
     {
         $this->messages = array();
-        $this->messages[] = '[' . date('Y/m/d h:i:s') . ']---------- Game start ----------';
+        $this->messages[] = '[' . date('Y/m/d h:i:s') . ']---------- Turn #1 ----------';
     }
     
     public function Add($message, $date = true)

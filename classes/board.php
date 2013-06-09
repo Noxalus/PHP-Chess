@@ -229,7 +229,7 @@ class Board
                         $logs->Add('Castling short !!');
                         $newKingPosition = new Position($king->GetPosition()->x - 2, $king->GetPosition()->y);
                         $this->board[$newKingPosition->x][$newKingPosition->y] = $king;
-                        $king->SetPosition($newKingPosition);
+                        $king->SetPosition($newKingPosition, $this->turnCounter);
                     }
                     // Castling long
                     else if (($king->GetPosition()->x + 4) == $piece->GetPosition()->x)
@@ -237,7 +237,7 @@ class Board
                         $logs->Add('Castling long !!!');
                         $newKingPosition = new Position($king->GetPosition()->x + 2, $king->GetPosition()->y);
                         $this->board[$newKingPosition->x][$newKingPosition->y] = $king;
-                        $king->SetPosition($newKingPosition);
+                        $king->SetPosition($newKingPosition, $this->turnCounter);
                     }
                     
                     $this->board[$target->x][$target->y] = $piece;
@@ -249,7 +249,13 @@ class Board
             }
 
             $this->board[$origin->x][$origin->y] = null;
-            $piece->SetPosition($target);
+            $piece->SetPosition($target, $this->turnCounter);
+            
+            $logs->Add(get_class($piece) . '\'s history: ');
+            foreach($piece->GetHistory() as $history)
+            {
+                $logs->Add($history[0] . ' => ' . $history[1]);
+            }
             
             return true;
         }
@@ -270,11 +276,12 @@ class Board
         
         if ($this->cycle == 2)
         {
-            $this->turnCounter++;
-            $logs->Add('---------- Turn #' . $this->turnCounter . ' ----------');
+            
+            $logs->Add('---------- Turn #' . (round($this->turnCounter / 2) + 1)  . ' ----------');
             $this->cycle = 0;
         }
         
+        $this->turnCounter++;
     }
 
     public function DisplayTurn()
@@ -422,6 +429,11 @@ class Board
         }
         
         return false;
+    }
+    
+    public function GetTurnCounter()
+    {
+        return $this->turnCounter;
     }
     
     /** Debug **/

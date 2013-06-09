@@ -35,15 +35,20 @@ class Piece
         return $this->possibleCells;
     }
     
-    public function SetPosition($position)
+    public function SetPosition($position, $turn)
     {
-        $this->history[] = $this->position;
+        $this->history[] = array($turn, $this->position);
         $this->position = $position;
     }
     
     public function IsFirstMove()
     {
         return (count($this->history) == 0);
+    }
+    
+    public function GetHistory()
+    {
+        return $this->history;
     }
     
     public function __toString()
