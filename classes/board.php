@@ -204,6 +204,18 @@ class Board
                         ' just ate a poor little ' . Color::ColorToString($this->GetPiece($target)->GetColor()) . ' ' . 
                         get_class($this->GetPiece($target)) . ' !');
             }
+            // "En passant" ?
+            else
+            {
+                $evilPawn = $this->GetPiece(new Position($target->x, $target->y + (-1) * (Color::Factor($piece->GetColor()))));
+                
+                if ($evilPawn !== null && $evilPawn->GetColor() != $piece->GetColor() && get_class($evilPawn) == 'Pawn')
+                {
+                    $this->board[$evilPawn->GetPosition()->x][$evilPawn->GetPosition()->y] = null;
+                    $this->RemovePiece($evilPawn, $evilPawn->GetColor());
+                    $logs->Add('Oh My God ! O_o This is an "en passant" capture, unbelievable !!');
+                }
+            }
             
             // Promotion
             if ((($piece->GetColor() == Color::White && $target->y == 7) || ($piece->GetColor() == Color::Black && $target->y == 0)) && get_class($piece) == 'Pawn')
@@ -250,12 +262,6 @@ class Board
 
             $this->board[$origin->x][$origin->y] = null;
             $piece->SetPosition($target, $this->turnCounter);
-            
-            $logs->Add(get_class($piece) . '\'s history: ');
-            foreach($piece->GetHistory() as $history)
-            {
-                $logs->Add($history[0] . ' => ' . $history[1]);
-            }
             
             return true;
         }
@@ -363,7 +369,7 @@ class Board
             $pieces = &$this->blackPieces;
         
         $count = count($pieces);
-        
+                
         for($i = 0; $i < $count; $i++)
         {
             if ($pieces[$i] === $target)

@@ -154,6 +154,6 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
             ?>
         </div>
         </div>
-        <?php //$board->DisplayPieces(); ?>
+        <?php $board->DisplayPieces(); ?>
     </body>
 </html>

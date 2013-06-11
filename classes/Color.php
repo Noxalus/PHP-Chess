@@ -7,6 +7,11 @@ class Color
     
     public static function ColorToString($color)
     {
-        return ($color === 0) ? 'white' : 'black';
+        return ($color === Color::White) ? 'white' : 'black';
+    }
+    
+    public static function Factor($color)
+    {
+        return ($color === Color::White) ? 1 : -1;
     }
 }

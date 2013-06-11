@@ -31,7 +31,7 @@ class Pawn extends Piece
              $this->possibleCells[] = clone($position);
         
         // "En passant"
-        $colorFactor = ($this->GetColor() === Color::White) ? 1 : -1;
+        $colorFactor = Color::Factor($this->GetColor());
         $left = new Position($this->GetPosition()->x - 1, $this->GetPosition()->y);
         if ((!Board::Out($left) && $board->GetPiece($left) != null))
         {
@@ -39,13 +39,17 @@ class Pawn extends Piece
             if (get_class($leftPiece) == 'Pawn' && $leftPiece->GetColor() != $this->GetColor())
             {
                 $history = $leftPiece->GetHistory();
-                $lastMove = $history[count($history) - 1];
-                if ($lastMove !== null && $lastMove[0] == $board->GetTurnCounter() - 1)
+                $historyCount = count($history);
+                if ($historyCount > 0)
                 {
-                    $lastPosition = $lastMove[1];
-                    if ($lastPosition->y == $left->y + (2 * $colorFactor))
+                    $lastMove = $history[$historyCount - 1];
+                    if ($lastMove !== null && $lastMove[0] == $board->GetTurnCounter() - 1)
                     {
-                        $this->possibleCells[] = new Position($left->x, $left->y + 1 * $colorFactor);
+                        $lastPosition = $lastMove[1];
+                        if ($lastPosition->y == $left->y + (2 * $colorFactor))
+                        {
+                            $this->possibleCells[] = new Position($left->x, $left->y + 1 * $colorFactor);
+                        }
                     }
                 }
             }
@@ -58,14 +62,18 @@ class Pawn extends Piece
             if (get_class($rightPiece) == 'Pawn' && $rightPiece->GetColor() != $this->GetColor())
             {
                 $history = $rightPiece->GetHistory();
-                $lastMove = $history[count($history) - 1];
-                
-                if ($lastMove !== null && $lastMove[0] == $board->GetTurnCounter() - 1)
+                $historyCount = count($history);
+                if ($historyCount > 0)
                 {
-                    $lastPosition = $lastMove[1];
-                    if ($lastPosition->y == $right->y + (2 * $colorFactor))
+                    $lastMove = $history[$historyCount - 1];
+
+                    if ($lastMove !== null && $lastMove[0] == $board->GetTurnCounter() - 1)
                     {
-                        $this->possibleCells[] = new Position($right->x, $right->y + 1 * $colorFactor);
+                        $lastPosition = $lastMove[1];
+                        if ($lastPosition->y == $right->y + (2 * $colorFactor))
+                        {
+                            $this->possibleCells[] = new Position($right->x, $right->y + 1 * $colorFactor);
+                        }
                     }
                 }
             }
@@ -74,15 +82,17 @@ class Pawn extends Piece
         
         if (count($this->history) == 0)
         {
-            if ($this->color == Color::Black)
-                $position->y -= 1;
-            else
-                $position->y += 1;
-            
             $position->x = $this->position->x;
-            
             if ($board->GetPiece($position) == null)
-                $this->possibleCells[] = clone($position);
+            {
+                if ($this->color == Color::Black)
+                    $position->y -= 1;
+                else
+                    $position->y += 1;
+
+                if ($board->GetPiece($position) == null)
+                    $this->possibleCells[] = clone($position);
+            }
         }
     }
     
