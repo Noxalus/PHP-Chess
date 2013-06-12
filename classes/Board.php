@@ -10,6 +10,7 @@ class Board
     private $turn;
     private $turnCounter;
     private $cycle;
+    private $history;
     
     public function __construct()
     {
@@ -20,7 +21,11 @@ class Board
         $this->whiteKing = null;
         $this->turnCounter = 0;
         $this->cycle = 0;
-
+        $this->history = array();
+    }
+    
+    public function Init()
+    {
         for ($x = 0; $x < 8; $x++)
         {
             $piece = null;
@@ -144,7 +149,12 @@ class Board
                 if ($this->board[$x][$y] !== null)
                 {
                     if ($this->GetTurn() != $this->GetPiece(new Position($x, $y))->GetColor())
-                        echo '<a href="index.php?action=move_target&x=' . $x . '&y=' . $y . '" class="cell">';
+                    {
+                        if (isset($_SESSION['origin']))
+                            echo '<a href="index.php?action=move_target&x=' . $x . '&y=' . $y . '" class="cell">';
+                        else
+                            echo '<a href="#" class="cell">';
+                    }
                     else
                         echo '<a href="index.php?action=move_origin&x=' . $x . '&y=' . $y . '" class="cell">';
                 }
@@ -198,11 +208,12 @@ class Board
             // Eat a piece ?
             if ($this->GetPiece($target) !== null)
             {
-                $this->RemovePiece($this->GetPiece($target), $this->GetPiece($target)->GetColor());
-                
                 $logs->Add('Look ! This ' . Color::ColorToString($piece->GetColor()) . ' ' . get_class($piece) . 
                         ' just ate a poor little ' . Color::ColorToString($this->GetPiece($target)->GetColor()) . ' ' . 
                         get_class($this->GetPiece($target)) . ' !');
+
+                $this->RemovePiece($this->GetPiece($target));
+                
             }
             // "En passant" ?
             else
@@ -212,15 +223,31 @@ class Board
                 if ($evilPawn !== null && $evilPawn->GetColor() != $piece->GetColor() && get_class($evilPawn) == 'Pawn')
                 {
                     $this->board[$evilPawn->GetPosition()->x][$evilPawn->GetPosition()->y] = null;
-                    $this->RemovePiece($evilPawn, $evilPawn->GetColor());
+                    $this->RemovePiece($evilPawn);
                     $logs->Add('Oh My God ! O_o This is an "en passant" capture, unbelievable !!');
                 }
             }
             
             // Promotion
-            if ((($piece->GetColor() == Color::White && $target->y == 7) || ($piece->GetColor() == Color::Black && $target->y == 0)) && get_class($piece) == 'Pawn')
+            if ($this->IsPromotion($piece, $target))
             {
                 $promotion = new Queen($target->x, $target->y, $piece->GetColor());
+                switch($_SESSION['promotion'])
+                {
+                    case 'rook':
+                        $promotion = new Rook($target->x, $target->y, $piece->GetColor());
+                        break;
+                    case 'knight':
+                        $promotion = new Knight($target->x, $target->y, $piece->GetColor());
+                        break;
+                    case 'bishop':
+                        $promotion = new Bishop($target->x, $target->y, $piece->GetColor());
+                        break;
+                    default:
+                        break;
+                }
+                
+                unset($_SESSION['promotion']);
                 $this->board[$target->x][$target->y] = $promotion;
                 $logs->Add('This small pawn became very great !');
             }
@@ -262,6 +289,8 @@ class Board
 
             $this->board[$origin->x][$origin->y] = null;
             $piece->SetPosition($target, $this->turnCounter);
+
+            $this->history[$this->turnCounter + 1] = array($origin, $target);
             
             return true;
         }
@@ -282,7 +311,6 @@ class Board
         
         if ($this->cycle == 2)
         {
-            
             $logs->Add('---------- Turn #' . (round($this->turnCounter / 2) + 1)  . ' ----------');
             $this->cycle = 0;
         }
@@ -362,10 +390,10 @@ class Board
         }
     }
     
-    private function RemovePiece($target, $color)
+    private function RemovePiece($target)
     {
         $pieces = &$this->whitePieces;
-        if ($color === Color::Black)
+        if ($target->GetColor() === Color::Black)
             $pieces = &$this->blackPieces;
         
         $count = count($pieces);
@@ -374,6 +402,7 @@ class Board
         {
             if ($pieces[$i] === $target)
             {
+                $this->board[$pieces[$i]->GetPosition()->x][$pieces[$i]->GetPosition()->y] = null;
                 unset($pieces[$i]);
                 break;
             }
@@ -442,6 +471,11 @@ class Board
         return $this->turnCounter;
     }
     
+    public function IsPromotion($piece, $target)
+    {
+        return ((($piece->GetColor() == Color::White && $target->y == 7) || ($piece->GetColor() == Color::Black && $target->y == 0)) && get_class($piece) == 'Pawn');
+    }
+    
     /** Debug **/
     public function DisplayPossibleCells($color)
     {
@@ -455,6 +489,14 @@ class Board
             {
                 $logs->Add("\t" . '=> ' . $cell . '<br />', false);
             }
+        }
+    }
+    
+    public function DisplayHistory()
+    {
+        foreach($this->history as $turn => $positions)
+        {
+            echo $turn . ': ' . $positions[0] . ' => ' . $positions[1] . '<br />';
         }
     }
 }
