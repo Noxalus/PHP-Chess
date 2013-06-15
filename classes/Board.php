@@ -213,10 +213,9 @@ class Board
                         get_class($this->GetPiece($target)) . ' !');
 
                 $this->RemovePiece($this->GetPiece($target));
-                
             }
             // "En passant" ?
-            else
+            else if (get_class($piece) == 'Pawn')
             {
                 $evilPawn = $this->GetPiece(new Position($target->x, $target->y + (-1) * (Color::Factor($piece->GetColor()))));
                 
@@ -392,9 +391,7 @@ class Board
     
     private function RemovePiece($target)
     {
-        $pieces = &$this->whitePieces;
-        if ($target->GetColor() === Color::Black)
-            $pieces = &$this->blackPieces;
+        $pieces = $this->GetPieces($target->GetColor());
         
         $count = count($pieces);
                 
@@ -404,9 +401,12 @@ class Board
             {
                 $this->board[$pieces[$i]->GetPosition()->x][$pieces[$i]->GetPosition()->y] = null;
                 unset($pieces[$i]);
-                break;
+                return;
             }
         }
+        
+        echo 'COUCOU';
+        exit;
     }
     
     public function KingCheck($color, $position = null)
@@ -474,6 +474,15 @@ class Board
     public function IsPromotion($piece, $target)
     {
         return ((($piece->GetColor() == Color::White && $target->y == 7) || ($piece->GetColor() == Color::Black && $target->y == 0)) && get_class($piece) == 'Pawn');
+    }
+    
+    private function GetPieces($color)
+    {
+        $pieces = &$this->whitePieces;
+        if ($color === Color::Black)
+            $pieces = &$this->blackPieces;
+            
+        return $pieces;
     }
     
     /** Debug **/
