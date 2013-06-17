@@ -48,13 +48,15 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
             $x = $_GET['x'];
             $y = $_GET['y'];
 
-            echo '<h1>Please choose your promotion !</h1>';
+            echo '<div id="promotion-box"><h1>Please choose your promotion !</h1>';
 
             $pieceTypes = array('bishop', 'knight', 'rook', 'queen');
             foreach ($pieceTypes as $type)
             {
                 echo '<a href="index.php?action=move_target&x=' . $x . '&y=' . $y . '&choice=' . $type . '"><img src="sprites/' . $piece->GetColor() . '_' . $type . '.png" /></a>';
             }
+            
+            echo '</div>';
         }
         else
         {
@@ -67,7 +69,7 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
 
             if (empty($_GET))
             {
-                $logs->Add($board->DisplayTurn());
+                $logs->Add($board->DisplayTurn(), 'info');
             }
 
             if (isset($_GET['action']))
@@ -88,7 +90,7 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
                                     if ($piece->GetColor() == Color::White && $board->GetWhiteKing()->InCheck() && $piece !== $board->GetWhiteKing() ||
                                             $piece->GetColor() == Color::Black && $board->GetBlackKing()->InCheck() && $piece !== $board->GetBlackKing())
                                     {
-                                        $logs->Add('Your king is under attack, you have to move it quickly !');
+                                        $logs->Add('Your king is under attack, you have to move it quickly !', 'warning');
                                         header('Location: index.php');
                                     }
                                     else
@@ -97,7 +99,7 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
 
                                         if (count($piece->GetPossibleCells()) == 0)
                                         {
-                                            $logs->Add('No move available for this piece !');
+                                            $logs->Add('No move available for this piece !', 'error');
                                             header('Location: index.php');
                                         }
                                         else
@@ -106,7 +108,7 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
                                 }
                                 else
                                 {
-                                    $logs->Add('This is not your turn !');
+                                    $logs->Add('This is not your turn !', 'error');
                                 }
                             }
                         }
@@ -137,13 +139,13 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
                                     }
                                     else
                                     {
-                                        $logs->Add('Invalid move !!');
+                                        $logs->Add('Invalid move !!', 'error');
                                     }
                                 }
                             }
                             else
                             {
-                                $logs->Add('Invalid move !');
+                                $logs->Add('Invalid move !', 'error');
                             }
 
                             unset($_SESSION['origin']);

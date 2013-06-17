@@ -203,14 +203,14 @@ class Board
         {
             global $logs;
             
-            $logs->Add(get_class($piece) . ' moved from ' . $origin . ' to ' . $target);
+            $logs->Add(get_class($piece) . ' moved from ' . $origin . ' to ' . $target, 'info');
             
             // Eat a piece ?
             if ($this->GetPiece($target) !== null)
             {
                 $logs->Add('Look ! This ' . Color::ColorToString($piece->GetColor()) . ' ' . get_class($piece) . 
                         ' just ate a poor little ' . Color::ColorToString($this->GetPiece($target)->GetColor()) . ' ' . 
-                        get_class($this->GetPiece($target)) . ' !');
+                        get_class($this->GetPiece($target)) . ' !', 'success');
 
                 $this->RemovePiece($this->GetPiece($target));
             }
@@ -223,7 +223,7 @@ class Board
                 {
                     $this->board[$evilPawn->GetPosition()->x][$evilPawn->GetPosition()->y] = null;
                     $this->RemovePiece($evilPawn);
-                    $logs->Add('Oh My God ! O_o This is an "en passant" capture, unbelievable !!');
+                    $logs->Add('Oh My God ! O_o This is an "en passant" capture, unbelievable !!', 'success');
                 }
             }
             
@@ -248,7 +248,7 @@ class Board
                 
                 unset($_SESSION['promotion']);
                 $this->board[$target->x][$target->y] = $promotion;
-                $logs->Add('This small pawn became very great !');
+                $logs->Add('This small pawn got a promotion and became very great !', 'success');
             }
             // Castling
             else if (get_class($piece) == 'Rook' && $piece->IsFirstMove())
@@ -259,12 +259,12 @@ class Board
                 
                 if (!$king->CheckAtLeastOnce() && $king->IsFirstMove())
                 {
-                    $logs->Add('Castling O_o !');
+                    $logs->Add('Castling O_o !', 'success');
                     $this->board[$king->GetPosition()->x][$king->GetPosition()->y] = null;
                     // Castling shot
                     if (($king->GetPosition()->x - 3) == $piece->GetPosition()->x)
                     {
-                        $logs->Add('Castling short !!');
+                        $logs->Add('Castling short !!', 'success');
                         $newKingPosition = new Position($king->GetPosition()->x - 2, $king->GetPosition()->y);
                         $this->board[$newKingPosition->x][$newKingPosition->y] = $king;
                         $king->SetPosition($newKingPosition, $this->turnCounter);
@@ -272,7 +272,7 @@ class Board
                     // Castling long
                     else if (($king->GetPosition()->x + 4) == $piece->GetPosition()->x)
                     {
-                        $logs->Add('Castling long !!!');
+                        $logs->Add('Castling long !!!', 'success');
                         $newKingPosition = new Position($king->GetPosition()->x + 2, $king->GetPosition()->y);
                         $this->board[$newKingPosition->x][$newKingPosition->y] = $king;
                         $king->SetPosition($newKingPosition, $this->turnCounter);
@@ -310,7 +310,7 @@ class Board
         
         if ($this->cycle == 2)
         {
-            $logs->Add('---------- Turn #' . (round($this->turnCounter / 2) + 1)  . ' ----------');
+            $logs->Add('---------- Turn #' . (round($this->turnCounter / 2) + 1)  . ' ----------', 'game');
             $this->cycle = 0;
         }
         
@@ -442,7 +442,7 @@ class Board
             {
                 if ($position === null)
                 {
-                    $logs->Add(ucfirst(Color::ColorToString($color)) . ' king in check (by ' . get_class($piece) . ' in ' . $piece->GetPosition() . ') !');
+                    $logs->Add(ucfirst(Color::ColorToString($color)) . ' king in check (by ' . get_class($piece) . ' in ' . $piece->GetPosition() . ') !', 'warning');
                     $king->SetCheck(true);
                 }
                 else
@@ -493,10 +493,10 @@ class Board
         
         foreach($pieces as $piece)
         {
-            $logs->Add(get_class($piece) . ' at ' . $piece->GetPosition() . ':<br />', false);
+            $logs->Add(get_class($piece) . ' at ' . $piece->GetPosition() . ':<br />', 'debug');
             foreach($piece->GetPossibleCells() as $cell)
             {
-                $logs->Add("\t" . '=> ' . $cell . '<br />', false);
+                $logs->Add("\t" . '=> ' . $cell . '<br />', 'debug');
             }
         }
     }

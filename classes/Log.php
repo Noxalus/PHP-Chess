@@ -1,32 +1,47 @@
 <?php
 
 class Log
-{
+{   
+    private static $colors = array
+        (
+            'info' => 'blue',
+            'warning' => 'yellow',
+            'error' => 'red', 
+            'success' => 'green', 
+            'game' => 'black',
+            'debug' => 'grey'
+        );
+    
     private $messages;
             
     public function __construct()
     {
         $this->messages = array();
-        $this->messages[] = '[' . date('Y/m/d h:i:s') . ']---------- Turn #1 ----------';
+        $this->Add('---------- Turn #1 ----------', 'game');
     }
     
-    public function Add($message, $date = true)
+    public function Add($message, $type)
     {
-        $string = '';
-        if ($date)
-            $string .= '[' . date('Y/m/d h:i:s') . '] ';
-        
-        $string .= $message;
-        
-        $this->messages[] = $string;
+        $this->messages[] = array(
+            'content' => $message,
+            'date' => new DateTime(),
+            'type' => $type
+        );
     }
     
-    public function Display()
+    public function Display($date = true)
     {
-        $counter = 0;
+        $counter = 0;        
         foreach($this->messages as $message)
         {
-            echo '[' . $counter . ']' . $message . '<br />';
+            $string = '';
+            
+            if ($date)
+            $string .= '[<i>' . $message['date']->format('h:i:s') . '</i>] ';
+            
+            $string .= '<span style="color:' . Log::$colors[$message['type']] . ';"> ' . $message['content'] . '</span>';
+            
+            echo $string . '<br />';
             $counter++;
         }
     }
