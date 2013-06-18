@@ -37,7 +37,10 @@ class Piece
     
     public function SetPosition($position, $turn)
     {
-        $this->history[] = array($turn, $this->position);
+        if ($turn === null)
+            $this->history = array_slice ($this->history, count($this->history) - 1);
+        else
+            $this->history[] = array($turn, $this->position);
         $this->position = $position;
     }
     

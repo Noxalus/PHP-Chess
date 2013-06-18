@@ -29,6 +29,7 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
 
         spl_autoload_register('autoloader');
 
+        // Board
         if (!isset($_SESSION['board']))
         {
             $board = new Board();
@@ -37,6 +38,24 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
         else
         {
             $board = unserialize($_SESSION['board']);
+        }
+        
+        // Log
+        if (!isset($_SESSION['logs']))
+            $logs = new Log();
+        else
+        {
+            $logs = unserialize($_SESSION['logs']);
+        }
+        
+        // History
+        if (isset($_GET['previous']) && $_GET['previous'] == 1)
+        {
+            $board->Previous();
+        }
+        else if (isset($_GET['next']) && $_GET['next'] == 1)
+        {
+            $board->Next();
         }
 
         if (isset($_GET['action']) && $_GET['action'] == 'promotion' &&
@@ -60,13 +79,6 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
         }
         else
         {
-            if (!isset($_SESSION['logs']))
-                $logs = new Log();
-            else
-            {
-                $logs = unserialize($_SESSION['logs']);
-            }
-
             if (empty($_GET))
             {
                 $logs->Add($board->DisplayTurn(), 'info');
@@ -164,7 +176,8 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
             }
 
             //$board->DisplayPossibleCells(Color::White);
-
+            $board->DisplayHistory();
+            
             $_SESSION['board'] = serialize($board);
             $_SESSION['logs'] = serialize($logs);
             ?>
@@ -192,7 +205,6 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
                 </div>
             </div>
             <?php
-            $board->DisplayHistory();
             $board->DisplayPieces();
         }
         ?>
