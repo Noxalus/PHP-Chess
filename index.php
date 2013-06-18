@@ -135,7 +135,7 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
                                 $origin = unserialize($_SESSION['origin']);
                                 $piece = $board->GetPiece($origin);
                                 $target = new Position($_GET['x'], $_GET['y']);
-
+                                
                                 if ($board->IsPromotion($piece, $target) && empty($_GET['choice']))
                                 {
                                     header('Location: index.php?action=promotion&x=' . $target->x . '&y=' . $target->y);
@@ -176,7 +176,7 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
             }
 
             //$board->DisplayPossibleCells(Color::White);
-            $board->DisplayHistory();
+            //$board->DisplayHistory();
             
             $_SESSION['board'] = serialize($board);
             $_SESSION['logs'] = serialize($logs);

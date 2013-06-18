@@ -2,6 +2,10 @@
 
 require_once 'piece.php';
 
+
+/**
+ * Class to represent bishop in chess game
+ */
 class Bishop extends Piece
 {
     public function __construct($x, $y, $color)

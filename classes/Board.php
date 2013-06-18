@@ -202,13 +202,13 @@ class Board
 
     public function Move($origin, $target)
     {
+        global $logs;
+
         $piece = $this->GetPiece($origin);
         $targetPiece = $this->GetPiece($target);
         $type = 'classic';
         if (in_array($target, $piece->GetPossibleCells()))
         {
-            global $logs;
-            
             $logs->Add(get_class($piece) . ' moved from ' . $origin . ' to ' . $target, 'info');
             
             // Eat a piece ?
@@ -231,47 +231,34 @@ class Board
                     $this->RemovePiece($evilPawn);
                     $logs->Add('Oh My God ! O_o This is an "en passant" capture, unbelievable !!', 'success');
                     $type = 'en passant';
+                    $targetPiece = $evilPawn;
                 }
             }
             
             // Promotion
             if ($this->IsPromotion($piece, $target))
             {
-                $promotion = new Queen($target->x, $target->y, $piece->GetColor());
-                switch($_SESSION['promotion'])
-                {
-                    case 'rook':
-                        $promotion = new Rook($target->x, $target->y, $piece->GetColor());
-                        break;
-                    case 'knight':
-                        $promotion = new Knight($target->x, $target->y, $piece->GetColor());
-                        break;
-                    case 'bishop':
-                        $promotion = new Bishop($target->x, $target->y, $piece->GetColor());
-                        break;
-                    default:
-                        break;
-                }
+                $promotion = ucfirst($_SESSION['promotion']);
+                if (!in_array($promotion, array('Rook', 'Knight', 'Bishop', 'Queen')))
+                        $promotion = 'Queen';
                 
+                $this->RemovePiece($piece);
+                $piece = $this->AddPiece($promotion, $piece->GetColor(), $target);
                 unset($_SESSION['promotion']);
-                $this->board[$target->x][$target->y] = $promotion;
                 $logs->Add('This small pawn got a promotion and became very great !', 'success');
                 $type = 'promotion';
             }
             // Castling
             else if (get_class($piece) == 'Rook' && $piece->IsFirstMove())
             {
-                $king = &$this->whiteKing;
-                if ($piece->GetColor() === Color::Black)
-                    $king = &$this->blackKing;
+                $king = &$this->GetKing($piece->GetColor());
                 
                 if (!$king->CheckAtLeastOnce() && $king->IsFirstMove())
                 {
-                    $logs->Add('Castling O_o !', 'success');
-                    $this->board[$king->GetPosition()->x][$king->GetPosition()->y] = null;
-                    // Castling shot
-                    if (($king->GetPosition()->x - 3) == $piece->GetPosition()->x)
+                    // Castling short
+                    if (($king->GetPosition()->x - 3) == $piece->GetPosition()->x && $king->GetPosition()->y == $target->y)
                     {
+                        $this->board[$king->GetPosition()->x][$king->GetPosition()->y] = null;
                         $logs->Add('Castling short !!', 'success');
                         $newKingPosition = new Position($king->GetPosition()->x - 2, $king->GetPosition()->y);
                         $this->board[$newKingPosition->x][$newKingPosition->y] = $king;
@@ -279,17 +266,17 @@ class Board
                         $type = 'castling short';
                     }
                     // Castling long
-                    else if (($king->GetPosition()->x + 4) == $piece->GetPosition()->x)
+                    else if (($king->GetPosition()->x + 4) == $piece->GetPosition()->x && $king->GetPosition()->y == $target->y)
                     {
+                        $this->board[$king->GetPosition()->x][$king->GetPosition()->y] = null;
                         $logs->Add('Castling long !!!', 'success');
                         $newKingPosition = new Position($king->GetPosition()->x + 2, $king->GetPosition()->y);
                         $this->board[$newKingPosition->x][$newKingPosition->y] = $king;
                         $king->SetPosition($newKingPosition, $this->turnCounter);
                         $type = 'castling long';
                     }
-                    
-                    $this->board[$target->x][$target->y] = $piece;
                 }
+                $this->board[$target->x][$target->y] = $piece;
             }
             else
             {
@@ -318,12 +305,9 @@ class Board
             $this->KingCheck(Color::Black);
         }
         
-        $this->cycle++;
-        
-        if ($this->cycle == 2)
+        if ($this->turn === Color::White)
         {
             $logs->Add('---------- Turn #' . (round($this->turnCounter / 2) + 1)  . ' ----------', 'game');
-            $this->cycle = 0;
         }
         
         $this->turnCounter++;
@@ -335,17 +319,13 @@ class Board
         
         $this->turn = ($this->turn == Color::White) ? Color::Black : Color::White;
         
-        $this->cycle--;
-        if ($this->cycle < 0)
-            $this->cycle = 2;
-        
-        if ($this->cycle == 2)
+        $this->turnCounter--;
+
+        if ($this->turn === Color::White)
         {
             $logs->Add('---------- Turn #' . (round($this->turnCounter / 2) + 1)  . ' ----------', 'game');
-            $this->cycle = 0;
         }
         
-        $this->turnCounter--;
     }
 
     public function DisplayTurn()
@@ -406,6 +386,15 @@ class Board
     {
         return $this->blackKing;
     }
+    
+    public function &GetKing($color)
+    {
+        $king = &$this->whiteKing;
+        if ($color === Color::Black)
+            $king = &$this->blackKing;
+        
+        return $king;
+    }
 
     public function DisplayPieces()
     {
@@ -420,18 +409,18 @@ class Board
         }
     }
     
-    private function RemovePiece($target)
+    public function RemovePiece($target)
     {
         $pieces = &$this->GetPieces($target->GetColor());
         
         $count = count($pieces);
-                
         for($i = 0; $i < $count; $i++)
         {
             if ($pieces[$i] === $target)
             {
                 $this->board[$pieces[$i]->GetPosition()->x][$pieces[$i]->GetPosition()->y] = null;
                 unset($pieces[$i]);
+                sort($pieces);
                 return;
             }
         }
@@ -521,7 +510,10 @@ class Board
     {
         if ($this->history->Previous($this))
         {
+            global $logs;
+            
             $this->PreviousTurn();
+            $logs->Add('Please let me play again this move !', 'warning');
         }
     }
     
@@ -539,11 +531,14 @@ class Board
         if ($piece === null)
         {
             $logs->Add('No piece at this position => ' . $origin . ', we can\'t move it to ' . $target, 'error');
+            return false;
         }
         
         $this->board[$target->x][$target->y] = $piece;
         $this->board[$origin->x][$origin->y] = null;
         $piece->SetPosition($target, null);
+        
+        return true;
     }
     
     public function AddPiece($type, $color, $position)
@@ -554,19 +549,26 @@ class Board
         {
             case 'Pawn':
                 $piece = new Pawn($position->x, $position->y, $color);
+                break;
             case 'Rook':
                 $piece = new Rook($position->x, $position->y, $color);
+                break;
             case 'Knight':
                 $piece = new Knight($position->x, $position->y, $color);
+                break;
             case 'Bishop':
                 $piece = new Bishop($position->x, $position->y, $color);
+                break;
             case 'Queen':
                 $piece = new Queen($position->x, $position->y, $color);
+                break;
             case 'King':
                 $piece = new King($position->x, $position->y, $color);
+                break;
             default:
                 // Error
                 $piece = new Pawn($position->x, $position->y, $color);
+                break;
         }
         
         if ($this->GetPiece($position) !== null)
@@ -574,6 +576,8 @@ class Board
         
         $this->board[$position->x][$position->y] = $piece;
         $pieces[] = $piece;
+        
+        return $piece;
     }
     
     /** Debug **/

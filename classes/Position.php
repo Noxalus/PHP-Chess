@@ -13,6 +13,6 @@ class Position
         
         public function __toString()
         {
-            return '[' . $this->x . ', ' . $this->y . ']';
+            return '[' . chr(96 + (8 - $this->x)) . ', ' . ($this->y + 1) . ']';
         }
 }

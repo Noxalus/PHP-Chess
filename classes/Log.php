@@ -5,9 +5,9 @@ class Log
     private static $colors = array
         (
             'info' => 'blue',
-            'warning' => 'yellow',
+            'warning' => '#ffd200', // Yellow
             'error' => 'red', 
-            'success' => 'green', 
+            'success' => '#006700', // Green
             'game' => 'black',
             'debug' => 'grey'
         );
