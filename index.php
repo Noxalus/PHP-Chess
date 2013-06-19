@@ -79,7 +79,7 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
         }
         else
         {
-            if (empty($_GET))
+            if (empty($_GET) && !$board->IsFinished())
             {
                 $logs->Add($board->DisplayTurn(), 'info');
             }
@@ -108,21 +108,10 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
                                     }
                                     else
                                     {*/
-                                        $unsecuredCells = $board->GetUnsecuredCells($board->GetTurn());
-                                        $piece->ComputePossibleCells($board);
-                                        if (count($unsecuredCells) > 0)
-                                        {
-                                            foreach($unsecuredCells as $data)
-                                            {
-                                                if ($data[0] === $piece)
-                                                {
-                                                    $board->CleanUnsecuredCells($piece, $data[1]);
-                                                }
-                                            }
-                                        }
-                                        
+                                        $board->ComputeRealPossibleCells($piece);                                        
                                         if (count($piece->GetPossibleCells()) == 0)
                                         {
+                                            $board->CleanPossibleCells($board->GetTurn());
                                             $logs->Add('No move available for this piece !', 'error');
                                             header('Location: index.php');
                                         }
@@ -215,6 +204,11 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
                     $logs->Display();
                     ?>
                 </div>
+                <script>
+                // Auto scroll for log's window
+                var elem = document.getElementById('logs');
+                elem.scrollTop = elem.scrollHeight;
+                </script>
             </div>
             <?php
             $board->DisplayPieces();

@@ -11,6 +11,7 @@ class Board
     private $turnCounter;
     private $cycle;
     private $history;
+    private $isFinished;
     
     public function __construct()
     {
@@ -27,6 +28,7 @@ class Board
     
     public function Init()
     {
+        $this->isFinished = false;
         for ($x = 0; $x < 8; $x++)
         {
             $piece = null;
@@ -151,27 +153,29 @@ class Board
                 echo '<td style="width: 100px; height: 100px; text-align: center; vertical-align: center; border: 1px solid black;' . $blackCell . '">';
                 echo '[' . $x . ',' . $y . ']<br />';
 
-                if ($this->board[$x][$y] !== null)
+                if (!$this->isFinished)
                 {
-                    if ($this->GetTurn() != $this->GetPiece(new Position($x, $y))->GetColor())
+                    if ($this->board[$x][$y] !== null)
                     {
-                        if (isset($_SESSION['origin']))
-                            echo '<a href="index.php?action=move_target&x=' . $x . '&y=' . $y . '" class="cell">';
+                        if ($this->GetTurn() != $this->GetPiece(new Position($x, $y))->GetColor())
+                        {
+                            if (isset($_SESSION['origin']))
+                                echo '<a href="index.php?action=move_target&x=' . $x . '&y=' . $y . '" class="cell">';
+                            else
+                                echo '<a href="#" class="cell">';
+                        }
                         else
-                            echo '<a href="#" class="cell">';
+                            echo '<a href="index.php?action=move_origin&x=' . $x . '&y=' . $y . '" class="cell">';
                     }
-                    else
-                        echo '<a href="index.php?action=move_origin&x=' . $x . '&y=' . $y . '" class="cell">';
-                }
-                
-                else if (isset($_SESSION['origin']))
-                {
-                    $origin = unserialize($_SESSION['origin']);
-
-                    if ($this->GetPiece($origin) !== null &&
-                        in_array(new Position($x, $y), $this->GetPiece($origin)->GetPossibleCells()))
+                    else if (isset($_SESSION['origin']))
                     {
-                        echo '<a href="index.php?action=move_target&x=' . $x . '&y=' . $y . '" class="cell">';
+                        $origin = unserialize($_SESSION['origin']);
+
+                        if ($this->GetPiece($origin) !== null &&
+                            in_array(new Position($x, $y), $this->GetPiece($origin)->GetPossibleCells()))
+                        {
+                            echo '<a href="index.php?action=move_target&x=' . $x . '&y=' . $y . '" class="cell">';
+                        }
                     }
                 }
                 
@@ -180,7 +184,8 @@ class Board
                     echo $this->board[$x][$y];
                 }
 
-                echo '</a>';
+                if (!$this->isFinished)
+                    echo '</a>';
 
                 echo '</td>';
             }
@@ -199,6 +204,11 @@ class Board
         echo '</tr>';
 
         echo '</table>';
+    }
+    
+    public function IsFinished()
+    {
+        return $this->isFinished;
     }
 
     public function Move($origin, $target)
@@ -304,11 +314,29 @@ class Board
         $this->CleanPossibleCells(Color::White);
         $this->CleanPossibleCells(Color::Black);
         
+        $inCheck = false;
         if ($kingCheck)
+            $inCheck = $this->KingCheck($this->turn);
+        
+        // End of the game
+        $moves = $this->ComputeTotalPossibleMoves($this->turn);
+        if (count($moves) == 0)
         {
-            $this->KingCheck(Color::White);
-            $this->KingCheck(Color::Black);
+            // Pat ?
+            if ($inCheck)
+            {
+                $logs->Add('Checkmate ! ' . ucfirst(Color::ColorToString(Color::Invert($this->turn))) . ' won this game !', 'success');
+            }
+            else
+            {
+                $logs->Add('Oh my god, this is a Pat ! As the ' . ucfirst(Color::ColorToString($this->turn)) . '\'s 
+                    king seems unwilling to move, we have here a perfect draw game !', 'success');
+            }
+            
+            $this->isFinished = true;
+            return;
         }
+        
         
         if ($this->turn === Color::White)
         {
@@ -483,9 +511,17 @@ class Board
             {
                 $board = clone $this;
                 $board->SimpleMove($piece->GetPosition(), $cell, false);
-                
-                if ($board->KingCheck($color, false))
-                    $currentUnsecuredCells[] = $cell;
+
+                if (get_class($piece) == 'King')
+                {
+                    if ($board->IsUnsecuredCell($color, $cell))
+                        $currentUnsecuredCells[] = $cell;
+                }
+                else
+                {
+                    if ($board->KingCheck($color, false))
+                        $currentUnsecuredCells[] = $cell;   
+                }
             }
             
             if (!empty($currentUnsecuredCells))
@@ -519,12 +555,45 @@ class Board
         return $pieces;
     }
     
+    public function ComputeRealPossibleCells($piece)
+    {
+        $unsecuredCells = $this->GetUnsecuredCells($piece->GetColor());
+        $piece->ComputePossibleCells($this);
+        if (count($unsecuredCells) > 0)
+        {
+            foreach($unsecuredCells as $data)
+            {
+                if ($data[0] === $piece)
+                {
+                    $this->CleanUnsecuredCells($piece, $data[1]);
+                }
+            }
+        }
+    }
+    
+    public function ComputeTotalPossibleMoves($color)
+    {
+        $moves = array();
+        $pieces = $this->GetPieces($color);
+        foreach($pieces as $piece)
+        {
+            $this->ComputeRealPossibleCells($piece);
+            if (count($piece->GetPossibleCells()) > 0)
+                $moves[] = $piece->GetPossibleCells();
+        }
+        
+        return $moves;
+    }
+    
     /** History **/
     public function Previous()
     {
         if ($this->history->Previous($this))
         {
             global $logs;
+            
+            if ($this->isFinished)
+                $this->isFinished = false;
             
             $this->PreviousTurn();
             $logs->Add('Please let me play again this move !', 'warning');
@@ -551,7 +620,7 @@ class Board
         
         
         if ($targetPiece !== null)
-            $this->RemovePiece ($targetPiece);
+            $this->RemovePiece($targetPiece);
         
         $this->board[$target->x][$target->y] = $piece;
         $this->board[$origin->x][$origin->y] = null;
