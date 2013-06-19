@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Class to represent a piece position on the chess board
+ */
 class Position
 {
 	public $x;

@@ -1,7 +1,8 @@
 <?php
 
-require_once 'piece.php';
-
+/**
+ * Class to represent a pawn in chess game
+ */
 class Pawn extends Piece
 {
     public function __construct($x, $y, $color)

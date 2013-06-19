@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="generator" content="ApiGen 2.8.0" />
+	<meta name="robots" content="noindex" />
+
+	<title>File classes/Position.php | PHP-Chess</title>
+
+	<script type="text/javascript" src="resources/combined.js?1004505984"></script>
+	<script type="text/javascript" src="elementlist.js?2249041042"></script>
+	<link rel="stylesheet" type="text/css" media="all" href="resources/style.css?3505392360" />
+
+</head>
+
+<body>
+<div id="left">
+	<div id="menu">
+		<a href="index.html" title="Overview"><span>Overview</span></a>
+
+
+		<div id="groups">
+		</div>
+
+
+
+		<div id="elements">
+			<h3>Classes</h3>
+			<ul>
+				<li><a href="class-Bishop.html">Bishop</a></li>
+				<li><a href="class-Board.html">Board</a></li>
+				<li><a href="class-Color.html">Color</a></li>
+				<li><a href="class-History.html">History</a></li>
+				<li><a href="class-King.html">King</a></li>
+				<li><a href="class-Knight.html">Knight</a></li>
+				<li><a href="class-Log.html">Log</a></li>
+				<li><a href="class-Pawn.html">Pawn</a></li>
+				<li><a href="class-Piece.html">Piece</a></li>
+				<li class="active"><a href="class-Position.html">Position</a></li>
+				<li><a href="class-Queen.html">Queen</a></li>
+				<li><a href="class-Rook.html">Rook</a></li>
+			</ul>
+
+
+
+
+
+			<h3>Functions</h3>
+			<ul>
+				<li><a href="function-autoloader.html">autoloader</a></li>
+			</ul>
+		</div>
+	</div>
+</div>
+
+<div id="splitter"></div>
+
+<div id="right">
+<div id="rightInner">
+	<form id="search">
+		<input type="hidden" name="cx" value="" />
+		<input type="hidden" name="ie" value="UTF-8" />
+		<input type="text" name="q" class="text" />
+		<input type="submit" value="Search" />
+	</form>
+
+	<div id="navigation">
+		<ul>
+			<li>
+				<a href="index.html" title="Overview"><span>Overview</span></a>
+			</li>
+			<li>
+				<a href="class-Position.html" title="Summary of Position"><span>Class</span></a>
+			</li>
+		</ul>
+		<ul>
+			<li>
+				<a href="tree.html" title="Tree view of classes, interfaces, traits and exceptions"><span>Tree</span></a>
+			</li>
+		</ul>
+		<ul>
+		</ul>
+	</div>
+
+<pre><code><span id="1" class="l"><a class="l" href="#1"> 1: </a><span class="xlang">&lt;?php</span>
+</span><span id="2" class="l"><a class="l" href="#2"> 2: </a>
+</span><span id="3" class="l"><a class="l" href="#3"> 3: </a><span class="php-comment">/**
+</span></span><span id="4" class="l"><a class="l" href="#4"> 4: </a><span class="php-comment"> * Class to represent a piece position on the chess board
+</span></span><span id="5" class="l"><a class="l" href="#5"> 5: </a><span class="php-comment"> */</span>
+</span><span id="6" class="l"><a class="l" href="#6"> 6: </a><span class="php-keyword1">class</span> <a id="Position" href="#Position">Position</a>
+</span><span id="7" class="l"><a class="l" href="#7"> 7: </a>{
+</span><span id="8" class="l"><a class="l" href="#8"> 8: </a>    <span class="php-keyword1">public</span> <span class="php-var"><a id="$x" href="#$x">$x</a></span>;
+</span><span id="9" class="l"><a class="l" href="#9"> 9: </a>    <span class="php-keyword1">public</span> <span class="php-var"><a id="$y" href="#$y">$y</a></span>;
+</span><span id="10" class="l"><a class="l" href="#10">10: </a>        
+</span><span id="11" class="l"><a class="l" href="#11">11: </a>        <span class="php-keyword1">public</span> <span class="php-keyword1">function</span> <a id="___construct" href="#___construct">__construct</a>(<span class="php-var">$x</span>, <span class="php-var">$y</span>)
+</span><span id="12" class="l"><a class="l" href="#12">12: </a>        {
+</span><span id="13" class="l"><a class="l" href="#13">13: </a>            <span class="php-var">$this</span>-&gt;x = <span class="php-var">$x</span>;
+</span><span id="14" class="l"><a class="l" href="#14">14: </a>            <span class="php-var">$this</span>-&gt;y = <span class="php-var">$y</span>;
+</span><span id="15" class="l"><a class="l" href="#15">15: </a>        }
+</span><span id="16" class="l"><a class="l" href="#16">16: </a>        
+</span><span id="17" class="l"><a class="l" href="#17">17: </a>        <span class="php-keyword1">public</span> <span class="php-keyword1">function</span> <a id="___toString" href="#___toString">__toString</a>()
+</span><span id="18" class="l"><a class="l" href="#18">18: </a>        {
+</span><span id="19" class="l"><a class="l" href="#19">19: </a>            <span class="php-keyword1">return</span> <span class="php-quote">'['</span> . <span class="php-keyword2">chr</span>(<span class="php-num">96</span> + (<span class="php-num">8</span> - <span class="php-var">$this</span>-&gt;x)) . <span class="php-quote">', '</span> . (<span class="php-var">$this</span>-&gt;y + <span class="php-num">1</span>) . <span class="php-quote">']'</span>;
+</span><span id="20" class="l"><a class="l" href="#20">20: </a>        }
+</span><span id="21" class="l"><a class="l" href="#21">21: </a></span>}</code></pre>
+
+	<div id="footer">
+		PHP-Chess API documentation generated by <a href="http://apigen.org">ApiGen 2.8.0</a>
+	</div>
+</div>
+</div>
+</body>
+</html>

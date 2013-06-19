@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Class to represent generic piece in chess game
+ */
 class Piece
 {
     protected $position;
@@ -90,6 +93,16 @@ class Piece
     public function CleanHistory()
     {
         $this->history = array();
+    }
+    
+    public function Previous()
+    {
+        $this->history = array_slice($this->history, 0, count($this->history) - 1);
+    }
+    
+    public function Next()
+    {
+        // TODO: array_slice is not a good idea for Previous method :p
     }
 
     public function __toString()

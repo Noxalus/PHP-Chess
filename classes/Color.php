@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Class to represent a player color
+ */
 class Color
 {
     const White = 0;

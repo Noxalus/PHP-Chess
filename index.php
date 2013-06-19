@@ -1,13 +1,21 @@
 <?php
 session_start();
 
-$validation = '';
+/**
+ * Include the needed class file
+ * @param string $classname The name of the class file to include
+ */
+function autoloader($classname)
+{
+    include 'classes/' . $classname . '.php';
+}
+
+spl_autoload_register('autoloader');
 
 if (isset($_GET['reset']) && $_GET['reset'] == 1)
 {
     session_destroy();
     header('Location: index.php');
-    $validation = 'Game have been reseted !';
 }
 ?>
 
@@ -20,15 +28,6 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
     </head>
     <body>
         <?php
-        if (!empty($validation))
-            echo '<p style="color: green;">' . $validation . '</p>';
-        function autoloader($classname)
-        {
-            include 'classes/' . $classname . '.php';
-        }
-
-        spl_autoload_register('autoloader');
-
         // Board
         if (!isset($_SESSION['board']))
         {
@@ -58,6 +57,7 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
             $board->Next();
         }
 
+        // Promotion
         if (isset($_GET['action']) && $_GET['action'] == 'promotion' &&
             isset($_GET['x']) && ctype_digit($_GET['x']) &&
             isset($_GET['y']) && ctype_digit($_GET['y']))
@@ -79,6 +79,7 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
         }
         else
         {
+            // Display the current player turn
             if (empty($_GET) && !$board->IsFinished())
             {
                 $logs->Add($board->DisplayTurn(), 'info');
@@ -98,26 +99,15 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
                             {
                                 if ($piece->GetColor() == $board->GetTurn())
                                 {
-                                    /*
-                                    // King is in check ?
-                                    if ($piece->GetColor() == Color::White && $board->GetWhiteKing()->InCheck() && $piece !== $board->GetWhiteKing() ||
-                                        $piece->GetColor() == Color::Black && $board->GetBlackKing()->InCheck() && $piece !== $board->GetBlackKing())
+                                    $board->ComputeRealPossibleCells($piece);                                        
+                                    if (count($piece->GetPossibleCells()) == 0)
                                     {
-                                        $logs->Add('Your king is under attack, you have to move it quickly !', 'warning');
+                                        $board->CleanPossibleCells($board->GetTurn());
+                                        $logs->Add('No move available for this piece !', 'error');
                                         header('Location: index.php');
                                     }
                                     else
-                                    {*/
-                                        $board->ComputeRealPossibleCells($piece);                                        
-                                        if (count($piece->GetPossibleCells()) == 0)
-                                        {
-                                            $board->CleanPossibleCells($board->GetTurn());
-                                            $logs->Add('No move available for this piece !', 'error');
-                                            header('Location: index.php');
-                                        }
-                                        else
-                                            $_SESSION['origin'] = serialize($origin);
-                                    //}
+                                        $_SESSION['origin'] = serialize($origin);
                                 }
                                 else
                                 {
@@ -175,9 +165,6 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
             {
                 $logs->Clear();
             }
-
-            //$board->DisplayPossibleCells(Color::White);
-            //$board->DisplayHistory();
             
             $_SESSION['board'] = serialize($board);
             $_SESSION['logs'] = serialize($logs);
@@ -192,17 +179,10 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
                     <a href="index.php?reset=1" style="font-weight: bold; font-size: xx-large;">Reset the game !</a><br />
                     <a href="index.php?previous=1" style="float: left; font-style: italic;"><-- Previous</a>
                     <a href="index.php?clear=1" style="font-style: italic;">(Clear logs)</a>
-                    <a href="index.php?next=1" style="float: right; font-style: italic;">Next --></a>
+                    <a href="index.php" style="float: right; font-style: italic;">Next --></a>
                 </p>
                 <div id="logs">
-                    <?php
-                    /*
-                      echo '<pre>';
-                      print_r($_SESSION);
-                      echo '</pre>';
-                     */
-                    $logs->Display();
-                    ?>
+                    <?php $logs->Display(); ?>
                 </div>
                 <script>
                 // Auto scroll for log's window
@@ -211,7 +191,6 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
                 </script>
             </div>
             <?php
-            $board->DisplayPieces();
         }
         ?>
     </body>

@@ -1,7 +1,8 @@
 <?php
 
-require_once 'piece.php';
-
+/**
+ * Class to represent a rook in chess game
+ */
 class Rook extends Piece
 {
     public function __construct($x, $y, $color)

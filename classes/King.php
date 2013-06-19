@@ -1,7 +1,8 @@
 <?php
 
-require_once 'piece.php';
-
+/**
+ * Class to represent a king in chess game
+ */
 class King extends Piece
 {
     private $check;
@@ -52,6 +53,14 @@ class King extends Piece
     public function InCheck()
     {
         return $this->check;
+    }
+    
+    public function Previous()
+    {
+        parent::Previous();
+        
+        if ($this->check)
+            $this->checkNumber--;
     }
     
     public function __toString()

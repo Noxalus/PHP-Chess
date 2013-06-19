@@ -1,10 +1,7 @@
 <?php
 
-require_once 'piece.php';
-
-
 /**
- * Class to represent bishop in chess game
+ * Class to represent a bishop in chess game
  */
 class Bishop extends Piece
 {

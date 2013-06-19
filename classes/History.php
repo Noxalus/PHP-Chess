@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Class to store the history of the game
+ */
 class History
 {
     private $history;
@@ -70,62 +73,103 @@ class History
         }
 
         $move = $this->history[$this->index];
-        switch ($move['type']['name'])
+        $piece = $board->GetPiece($move['piece']['target']);
+        
+        if ($piece !== null)
         {
-            case 'classic':
-                $board->SimpleMove($move['piece']['target'], $move['piece']['origin']);
-                if ($move['target'] !== null)
-                {
-                    $board->AddPiece($move['target']['type'], Color::Invert($move['piece']['color']), $move['piece']['target']);
-                }
-                break;
+            $piece->Previous();
+            switch ($move['type']['name'])
+            {
+                case 'classic':
+                    $board->SimpleMove($move['piece']['target'], $move['piece']['origin']);
+                    if ($move['target'] !== null)
+                    {
+                        $board->AddPiece($move['target']['type'], Color::Invert($move['piece']['color']), $move['piece']['target']);
+                    }
+                    break;
 
-            case 'promotion':
-                $board->RemovePiece($board->GetPiece($move['piece']['target']));
-                $piece = $board->AddPiece('Pawn', $move['piece']['color'], $move['piece']['origin']);
-                $piece->SetHistory($move['type']['history']);
-                if ($move['target'] !== null)
-                {
-                    $board->AddPiece($move['target']['type'], Color::Invert($move['piece']['color']), $move['piece']['target']);
-                }
-                break;
-            case 'en passant':
-                $target = $move['piece']['target'];
-                $origin = $move['piece']['origin'];
-                $board->SimpleMove($target, $origin);
-                $evilPawnPosition = new Position($target->x, $target->y + (-1) * (Color::Factor($move['piece']['color'])));
-                $piece = $board->AddPiece('Pawn', Color::Invert($move['piece']['color']), $evilPawnPosition);
-                $piece->SetHistory($move['type']['targetHistory']);
-                break;
-            case 'castling short':
-                $board->SimpleMove($move['piece']['target'], $move['piece']['origin']);
-                $king = $board->GetKing($move['piece']['color']);
-                $this->board[$king->GetPosition()->x][$king->GetPosition()->y] = null;
-                $newKingPosition = new Position($king->GetPosition()->x + 2, $king->GetPosition()->y);
-                $board->SimpleMove($king->GetPosition(), $newKingPosition);
-                break;
-            case 'castling long':
-                $board->SimpleMove($move['piece']['target'], $move['piece']['origin']);
-                $king = $board->GetKing($move['piece']['color']);
-                $this->board[$king->GetPosition()->x][$king->GetPosition()->y] = null;
-                $newKingPosition = new Position($king->GetPosition()->x - 2, $king->GetPosition()->y);
-                $board->SimpleMove($king->GetPosition(), $newKingPosition);
-                break;
+                case 'promotion':
+                    $board->RemovePiece($board->GetPiece($move['piece']['target']));
+                    $piece = $board->AddPiece('Pawn', $move['piece']['color'], $move['piece']['origin']);
+                    $piece->SetHistory($move['type']['history']);
+                    if ($move['target'] !== null)
+                    {
+                        $board->AddPiece($move['target']['type'], Color::Invert($move['piece']['color']), $move['piece']['target']);
+                    }
+                    break;
+                case 'en passant':
+                    $target = $move['piece']['target'];
+                    $origin = $move['piece']['origin'];
+                    $board->SimpleMove($target, $origin);
+                    $evilPawnPosition = new Position($target->x, $target->y + (-1) * (Color::Factor($move['piece']['color'])));
+                    $piece = $board->AddPiece('Pawn', Color::Invert($move['piece']['color']), $evilPawnPosition);
+                    $piece->SetHistory($move['type']['targetHistory']);
+                    break;
+                case 'castling short':
+                    $board->SimpleMove($move['piece']['target'], $move['piece']['origin']);
+                    $king = $board->GetKing($move['piece']['color']);
+                    $this->board[$king->GetPosition()->x][$king->GetPosition()->y] = null;
+                    $newKingPosition = new Position($king->GetPosition()->x + 2, $king->GetPosition()->y);
+                    $board->SimpleMove($king->GetPosition(), $newKingPosition);
+                    break;
+                case 'castling long':
+                    $board->SimpleMove($move['piece']['target'], $move['piece']['origin']);
+                    $king = $board->GetKing($move['piece']['color']);
+                    $this->board[$king->GetPosition()->x][$king->GetPosition()->y] = null;
+                    $newKingPosition = new Position($king->GetPosition()->x - 2, $king->GetPosition()->y);
+                    $board->SimpleMove($king->GetPosition(), $newKingPosition);
+                    break;
+            }
+
+            $this->index--;
+            return true;
         }
-
-        $this->index--;
-        return true;
+        else
+        {
+            return false;
+        }
     }
 
     public function Next(&$board)
     {
-        if ($this->index == count($this->history) - 1)
+        $this->index++;
+        if ($this->index > count($this->history) - 1 || $this->index < 0)
         {
             return false;
         }
 
-        $this->index++;
-        return true;
+        $move = $this->history[$this->index];
+        $piece = $board->GetPiece($move['piece']['origin']);
+        
+        if ($piece !== null)
+        {
+            $piece->Next();
+            switch ($move['type']['name'])
+            {
+                case 'classic':
+                    if ($move['target'] !== null)
+                    {
+                        $board->RemovePiece($board->GetPiece($move['piece']['target']));
+                    }
+                    $board->SimpleMove($move['piece']['origin'], $move['piece']['target']);
+
+                    break;
+
+                case 'promotion':
+                    break;
+                case 'en passant':
+                case 'castling short':
+                    break;
+                case 'castling long':
+                    break;
+            }
+
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     public function Display()

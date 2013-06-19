@@ -1,7 +1,8 @@
 <?php
 
-require_once 'piece.php';
-
+/**
+ * Class to represent a knight in chess game
+ */
 class Knight extends Piece
 {
     public function __construct($x, $y, $color)

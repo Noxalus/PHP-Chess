@@ -1,7 +1,10 @@
 <?php
 
+/**
+ * Class to store and display a lot of information on the game
+ */
 class Log
-{   
+{
     private static $colors = array
         (
             'info' => 'blue',
