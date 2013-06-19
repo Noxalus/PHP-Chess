@@ -27,7 +27,8 @@ class Piece
 
     public function ComputePossibleCells($board)
     {
-        return (count($this->possibleCells) == 0);
+        $this->possibleCells = array();
+        return true;
     }
 
     public function GetPossibleCells()
@@ -47,7 +48,7 @@ class Piece
             $count = count($this->possibleCells);
             for($i = 0; $i < $count; $i++)
             {
-                if ($cell === $this->possibleCells[$i])
+                if ($cell == $this->possibleCells[$i])
                 {
                     unset($this->possibleCells[$i]);
                 }

@@ -98,29 +98,25 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
                             {
                                 if ($piece->GetColor() == $board->GetTurn())
                                 {
+                                    /*
                                     // King is in check ?
                                     if ($piece->GetColor() == Color::White && $board->GetWhiteKing()->InCheck() && $piece !== $board->GetWhiteKing() ||
-                                            $piece->GetColor() == Color::Black && $board->GetBlackKing()->InCheck() && $piece !== $board->GetBlackKing())
+                                        $piece->GetColor() == Color::Black && $board->GetBlackKing()->InCheck() && $piece !== $board->GetBlackKing())
                                     {
                                         $logs->Add('Your king is under attack, you have to move it quickly !', 'warning');
                                         header('Location: index.php');
                                     }
                                     else
-                                    {
+                                    {*/
                                         $unsecuredCells = $board->GetUnsecuredCells($board->GetTurn());
                                         $piece->ComputePossibleCells($board);
                                         if (count($unsecuredCells) > 0)
                                         {
-                                            var_dump($unsecuredCells);
-                                            exit;
-                                            if (in_array($piece, $unsecuredCells))
+                                            foreach($unsecuredCells as $data)
                                             {
-                                                foreach($unsecuredCells as $data)
+                                                if ($data[0] === $piece)
                                                 {
-                                                    if ($data[0] === $piece)
-                                                    {
-                                                        $board->CleanUnsecuredCells($piece, $data[1]);
-                                                    }
+                                                    $board->CleanUnsecuredCells($piece, $data[1]);
                                                 }
                                             }
                                         }
@@ -132,7 +128,7 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
                                         }
                                         else
                                             $_SESSION['origin'] = serialize($origin);
-                                    }
+                                    //}
                                 }
                                 else
                                 {

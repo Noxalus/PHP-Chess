@@ -432,17 +432,20 @@ class Board
     }
     
     /** King check **/
-    public function KingCheck($color)
+    public function KingCheck($color, $logs = true)
     {
         $king = $this->GetKing($color);
         $piece = $this->IsUnsecuredCell($color, $king->GetPosition());
         
         if ($piece != null)
         {
-            global $logs;
+            if ($logs)
+            {
+                global $logs;
 
-            $logs->Add(ucfirst(Color::ColorToString($color)) . ' king in check (by ' . get_class($piece) . ' in ' . $piece->GetPosition() . ') !', 'warning');
-
+                $logs->Add(ucfirst(Color::ColorToString($color)) . ' king in check (by ' . get_class($piece) . ' in ' . $piece->GetPosition() . ') !', 'warning');
+            }
+            
             return true;
         }
         
@@ -473,22 +476,15 @@ class Board
         $unsecuredCells = array();
         $pieces = $this->GetPieces($color);
         foreach($pieces as $piece)
-        {
-            $x = $piece->GetPosition()->x;
-            $y = $piece->GetPosition()->y;
-            if ($x == 5 && $y == 2)
-            {
-                echo 'COUCOU';
-            }
-            
+        {            
             $currentUnsecuredCells = array();
+            $piece->ComputePossibleCells($this);
             foreach($piece->GetPossibleCells() as $cell)
             {
                 $board = clone $this;
-                $board->CleanPossibleCells($color);
                 $board->SimpleMove($piece->GetPosition(), $cell, false);
                 
-                if ($board->KingCheck($color))
+                if ($board->KingCheck($color, false))
                     $currentUnsecuredCells[] = $cell;
             }
             
@@ -545,12 +541,17 @@ class Board
         global $logs;
         
         $piece = $this->GetPiece($origin);
+        $targetPiece = $this->GetPiece($target);
         
         if ($piece === null)
         {
             $logs->Add('No piece at this position => ' . $origin . ', we can\'t move it to ' . $target, 'error');
             return false;
         }
+        
+        
+        if ($targetPiece !== null)
+            $this->RemovePiece ($targetPiece);
         
         $this->board[$target->x][$target->y] = $piece;
         $this->board[$origin->x][$origin->y] = null;
