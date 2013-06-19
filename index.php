@@ -90,7 +90,7 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
                 {
                     case 'move_origin':
                         if (isset($_GET['x']) && ctype_digit($_GET['x']) &&
-                                isset($_GET['y']) && ctype_digit($_GET['y']))
+                            isset($_GET['y']) && ctype_digit($_GET['y']))
                         {
                             $origin = new Position($_GET['x'], $_GET['y']);
                             $piece = $board->GetPiece($origin);
@@ -107,8 +107,24 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
                                     }
                                     else
                                     {
+                                        $unsecuredCells = $board->GetUnsecuredCells($board->GetTurn());
                                         $piece->ComputePossibleCells($board);
-
+                                        if (count($unsecuredCells) > 0)
+                                        {
+                                            var_dump($unsecuredCells);
+                                            exit;
+                                            if (in_array($piece, $unsecuredCells))
+                                            {
+                                                foreach($unsecuredCells as $data)
+                                                {
+                                                    if ($data[0] === $piece)
+                                                    {
+                                                        $board->CleanUnsecuredCells($piece, $data[1]);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        
                                         if (count($piece->GetPossibleCells()) == 0)
                                         {
                                             $logs->Add('No move available for this piece !', 'error');
@@ -130,11 +146,11 @@ if (isset($_GET['reset']) && $_GET['reset'] == 1)
                         if (isset($_SESSION['origin']))
                         {
                             if (isset($_GET['x']) && ctype_digit($_GET['x']) &&
-                                    isset($_GET['y']) && ctype_digit($_GET['y']))
+                                isset($_GET['y']) && ctype_digit($_GET['y']))
                             {
                                 $origin = unserialize($_SESSION['origin']);
                                 $piece = $board->GetPiece($origin);
-                                $target = new Position($_GET['x'], $_GET['y']);
+                                $target = new Position((int)$_GET['x'], (int)$_GET['y']);
                                 
                                 if ($board->IsPromotion($piece, $target) && empty($_GET['choice']))
                                 {

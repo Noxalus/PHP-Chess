@@ -11,132 +11,137 @@ class Queen extends Piece
 
     public function ComputePossibleCells($board)
     {
-        parent::ComputePossibleCells($board);
-     
-        $collisionBoard = $board->ComputeCollisionBoard($this->color);
-        
-        for($x = $this->position->x + 1; $x < 8; $x++)
+        if (parent::ComputePossibleCells($board))
         {
-            if (!$collisionBoard[$x][$this->position->y])
-            {
-                $this->possibleCells[] = new Position($x, $this->position->y);
+            $collisionBoard = $board->ComputeCollisionBoard($this->color);
 
-                $piece = $board->GetPiece(new Position($x, $this->position->y));
-                if ($piece != null && $piece->GetColor() != $this->color)
-                    break;
-            }
-            else
-                break;
-        }
-        
-        for($x = $this->position->x - 1; $x >= 0; $x--)
-        {
-            if (!$collisionBoard[$x][$this->position->y])
+            // Right
+            for($x = $this->position->x + 1; $x < 8; $x++)
             {
-                $this->possibleCells[] = new Position($x, $this->position->y);
-                 
-                $piece = $board->GetPiece(new Position($x, $this->position->y));
-                if ($piece != null && $piece->GetColor() != $this->color)
-                    break;
-            }
-            else
-                break;
-        }
-        
-        for($y = $this->position->y + 1; $y < 8; $y++)
-        {
-            if (!$collisionBoard[$this->position->x][$y])
-            {
-                $this->possibleCells[] = new Position($this->position->x, $y);
-                
-                $piece = $board->GetPiece(new Position($this->position->x, $y));
-                if ($piece != null && $piece->GetColor() != $this->color)
-                    break;
-            }
-            else
-                break;
-        }
-        
-        for($y = $this->position->y - 1; $y >= 0; $y--)
-        {
-            if (!$collisionBoard[$this->position->x][$y])
-            {
-                $this->possibleCells[] = new Position($this->position->x, $y);
+                if (!$collisionBoard[$x][$this->position->y])
+                {
+                    $this->possibleCells[] = new Position($x, $this->position->y);
 
-                $piece = $board->GetPiece(new Position($this->position->x, $y));
-                if ($piece != null && $piece->GetColor() != $this->color)
+                    $piece = $board->GetPiece(new Position($x, $this->position->y));
+                    if ($piece != null && $piece->GetColor() != $this->color)
+                        break;
+                }
+                else
                     break;
             }
-            else
-                break;
-        }
-        
-        $position = new Position($this->position->x + 1, $this->position->y + 1);
-        while(!Board::Out($position))
-        {
-            if (!$collisionBoard[$position->x][$position->y])
+
+            // Left
+            for($x = $this->position->x - 1; $x >= 0; $x--)
             {
-                $this->possibleCells[] = $position;
-                
-                $piece = $board->GetPiece($position);
-                if ($piece != null && $piece->GetColor() != $this->color)
+                if (!$collisionBoard[$x][$this->position->y])
+                {
+                    $this->possibleCells[] = new Position($x, $this->position->y);
+
+                    $piece = $board->GetPiece(new Position($x, $this->position->y));
+                    if ($piece != null && $piece->GetColor() != $this->color)
+                        break;
+                }
+                else
                     break;
             }
-            else
-                break;
-            
-            $position = new Position($position->x + 1, $position->y + 1);
-        }
-        
-        $position = new Position($this->position->x - 1, $this->position->y - 1);
-        while(!Board::Out($position))
-        {
-            if (!$collisionBoard[$position->x][$position->y])
+
+            // Top
+            for($y = $this->position->y + 1; $y < 8; $y++)
             {
-                $this->possibleCells[] = $position;
-                
-                $piece = $board->GetPiece($position);
-                if ($piece != null && $piece->GetColor() != $this->color)
+                if (!$collisionBoard[$this->position->x][$y])
+                {
+                    $this->possibleCells[] = new Position($this->position->x, $y);
+
+                    $piece = $board->GetPiece(new Position($this->position->x, $y));
+                    if ($piece != null && $piece->GetColor() != $this->color)
+                        break;
+                }
+                else
                     break;
             }
-            else
-                break;
-            
-            $position = new Position($position->x - 1, $position->y - 1);
-        }
-        
-        $position = new Position($this->position->x + 1, $this->position->y - 1);
-        while(!Board::Out($position))
-        {
-            if (!$collisionBoard[$position->x][$position->y])
+
+            // Bottom
+            for($y = $this->position->y - 1; $y >= 0; $y--)
             {
-                $this->possibleCells[] = $position;
-                
-                $piece = $board->GetPiece($position);
-                if ($piece != null && $piece->GetColor() != $this->color)
+                if (!$collisionBoard[$this->position->x][$y])
+                {
+                    $this->possibleCells[] = new Position($this->position->x, $y);
+
+                    $piece = $board->GetPiece(new Position($this->position->x, $y));
+                    if ($piece != null && $piece->GetColor() != $this->color)
+                        break;
+                }
+                else
                     break;
             }
-            else
-                break;
-            
-            $position = new Position($position->x + 1, $position->y - 1);
-        }
-        
-        $position = new Position($this->position->x - 1, $this->position->y + 1);
-        while(!Board::Out($position))
-        {
-            if (!$collisionBoard[$position->x][$position->y])
+
+            $UpRightCorner = new Position($this->position->x + 1, $this->position->y + 1);
+            while(!Board::Out($UpRightCorner))
             {
-                $this->possibleCells[] = $position;
-                
-                $piece = $board->GetPiece($position);
-                if ($piece != null && $piece->GetColor() != $this->color)
+                if (!$collisionBoard[$UpRightCorner->x][$UpRightCorner->y])
+                {
+                    $this->possibleCells[] = $UpRightCorner;
+
+                    $piece = $board->GetPiece($UpRightCorner);
+                    if ($piece != null && $piece->GetColor() != $this->color)
+                        break;
+                }
+                else
                     break;
+
+                $UpRightCorner = new Position($UpRightCorner->x + 1, $UpRightCorner->y + 1);
             }
-            else
-                break;
-            
-            $position = new Position($position->x - 1, $position->y + 1);
+
+            $BottomLeftCorner = new Position($this->position->x - 1, $this->position->y - 1);
+            while(!Board::Out($BottomLeftCorner))
+            {
+                if (!$collisionBoard[$BottomLeftCorner->x][$BottomLeftCorner->y])
+                {
+                    $this->possibleCells[] = $BottomLeftCorner;
+
+                    $piece = $board->GetPiece($BottomLeftCorner);
+                    if ($piece != null && $piece->GetColor() != $this->color)
+                        break;
+                }
+                else
+                    break;
+
+                $BottomLeftCorner = new Position($BottomLeftCorner->x - 1, $BottomLeftCorner->y - 1);
+            }
+
+            $BottomRightCorner = new Position($this->position->x + 1, $this->position->y - 1);
+            while(!Board::Out($BottomRightCorner))
+            {
+                if (!$collisionBoard[$BottomRightCorner->x][$BottomRightCorner->y])
+                {
+                    $this->possibleCells[] = $BottomRightCorner;
+
+                    $piece = $board->GetPiece($BottomRightCorner);
+                    if ($piece != null && $piece->GetColor() != $this->color)
+                        break;
+                }
+                else
+                    break;
+
+                $BottomRightCorner = new Position($BottomRightCorner->x + 1, $BottomRightCorner->y - 1);
+            }
+
+            $TopLeftCorner = new Position($this->position->x - 1, $this->position->y + 1);
+            while(!Board::Out($TopLeftCorner))
+            {
+                if (!$collisionBoard[$TopLeftCorner->x][$TopLeftCorner->y])
+                {
+                    $this->possibleCells[] = $TopLeftCorner;
+
+                    $piece = $board->GetPiece($TopLeftCorner);
+                    if ($piece != null && $piece->GetColor() != $this->color)
+                        break;
+                }
+                else
+                    break;
+
+                $TopLeftCorner = new Position($TopLeftCorner->x - 1, $TopLeftCorner->y + 1);
+            }
         }
     }
     

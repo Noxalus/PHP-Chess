@@ -14,6 +14,7 @@ class Board
     
     public function __construct()
     {
+        $this->board = array();
         $this->turn = Color::White;
         $this->blackPieces = array();
         $this->blackKing = null;
@@ -148,7 +149,7 @@ class Board
                 }
 
                 echo '<td style="width: 100px; height: 100px; text-align: center; vertical-align: center; border: 1px solid black;' . $blackCell . '">';
-                //echo '[' . $x . ',' . $y . ']<br />';
+                echo '[' . $x . ',' . $y . ']<br />';
 
                 if ($this->board[$x][$y] !== null)
                 {
@@ -299,6 +300,10 @@ class Board
         global $logs;
         
         $this->turn = ($this->turn == Color::White) ? Color::Black : Color::White;
+        
+        $this->CleanPossibleCells(Color::White);
+        $this->CleanPossibleCells(Color::Black);
+        
         if ($kingCheck)
         {
             $this->KingCheck(Color::White);
@@ -330,10 +335,7 @@ class Board
 
     public function DisplayTurn()
     {
-        if ($this->turn == 0)
-            return 'White player\'s turn !';
-        else if ($this->turn == 1)
-            return 'Black player\'s turn !';
+        return ($this->turn === Color::White) ? 'White player\'s turn !' : 'Black player\'s turn !';
     }
 
     public function GetTurn()
@@ -429,61 +431,77 @@ class Board
         exit;
     }
     
-    public function KingCheck($color, $position = null)
+    /** King check **/
+    public function KingCheck($color)
     {
-        global $logs;
-        $pieces = &$this->blackPieces;
-        $king = $this->whiteKing;
+        $king = $this->GetKing($color);
+        $piece = $this->IsUnsecuredCell($color, $king->GetPosition());
         
-        if ($color === Color::Black)
+        if ($piece != null)
         {
-            $pieces = &$this->whitePieces;
-            $king = $this->blackKing;
-        }
-        
-        if ($position === null)
-        {
-            $position = $king->GetPosition();
-            $save = $this->board[$position->x][$position->y];
-        }
-        else
-        {
-            // Save
-            $save = $this->board[$position->x][$position->y];
-            $this->board[$position->x][$position->y] = $king;
-        }
-        
-        foreach($pieces as &$piece)
-        {
-            if (get_class($piece) !== 'King')
-                $piece->ComputePossibleCells($this);
-            
-            if (in_array($position, $piece->GetPossibleCells()))
-            {
-                if ($position === null)
-                {
-                    $logs->Add(ucfirst(Color::ColorToString($color)) . ' king in check (by ' . get_class($piece) . ' in ' . $piece->GetPosition() . ') !', 'warning');
-                    $king->SetCheck(true);
-                }
-                else
-                {
-                    $this->board[$position->x][$position->y] = $save;
-                }
-                
-                return true;
-            }
-        }
-        
-        if ($position === null)
-        {
-            $king->SetCheck(false);
-        }
-        else
-        {
-            $this->board[$position->x][$position->y] = $save;
+            global $logs;
+
+            $logs->Add(ucfirst(Color::ColorToString($color)) . ' king in check (by ' . get_class($piece) . ' in ' . $piece->GetPosition() . ') !', 'warning');
+
+            return true;
         }
         
         return false;
+    }
+    
+    public function IsUnsecuredCell($color, $position)
+    {
+        $pieces = $this->GetPieces(Color::Invert($color));
+        
+        foreach($pieces as $piece)
+        {
+            if (get_class($piece) != 'King')
+            {
+                $piece->ComputePossibleCells($this);
+                if (in_array($position, $piece->GetPossibleCells()))
+                {
+                    return $piece;
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    public function GetUnsecuredCells($color)
+    {
+        $unsecuredCells = array();
+        $pieces = $this->GetPieces($color);
+        foreach($pieces as $piece)
+        {
+            $x = $piece->GetPosition()->x;
+            $y = $piece->GetPosition()->y;
+            if ($x == 5 && $y == 2)
+            {
+                echo 'COUCOU';
+            }
+            
+            $currentUnsecuredCells = array();
+            foreach($piece->GetPossibleCells() as $cell)
+            {
+                $board = clone $this;
+                $board->CleanPossibleCells($color);
+                $board->SimpleMove($piece->GetPosition(), $cell, false);
+                
+                if ($board->KingCheck($color))
+                    $currentUnsecuredCells[] = $cell;
+            }
+            
+            if (!empty($currentUnsecuredCells))
+                $unsecuredCells[] = array($piece, $currentUnsecuredCells);
+        }
+        
+        return $unsecuredCells;
+    }
+    
+    public function CleanUnsecuredCells($piece, $unsecuredCells)
+    {
+        $piece->CleanUnsecuredCells($unsecuredCells);
     }
     
     public function GetTurnCounter()
@@ -522,7 +540,7 @@ class Board
         $this->history->Next($this);
     }
     
-    public function SimpleMove($origin, $target)
+    public function SimpleMove($origin, $target, $setPosition = true)
     {
         global $logs;
         
@@ -536,7 +554,9 @@ class Board
         
         $this->board[$target->x][$target->y] = $piece;
         $this->board[$origin->x][$origin->y] = null;
-        $piece->SetPosition($target, null);
+        
+        if ($setPosition)
+            $piece->SetPosition($target, null);
         
         return true;
     }
@@ -578,6 +598,14 @@ class Board
         $pieces[] = $piece;
         
         return $piece;
+    }
+    
+    public function CleanPossibleCells($color)
+    {
+        foreach($this->GetPieces($color) as $piece)
+        {
+            $piece->CleanPossibleCells();
+        }
     }
     
     /** Debug **/

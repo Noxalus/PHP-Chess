@@ -16,20 +16,21 @@ class King extends Piece
 
     public function ComputePossibleCells($board)
     {
-        parent::ComputePossibleCells($board);
-     
-        $collisionBoard = $board->ComputeCollisionBoard($this->color);
-
-        for($x = $this->position->x - 1; $x <= $this->position->x + 1; $x++)
+        if (parent::ComputePossibleCells($board))
         {
-            for($y = $this->position->y - 1; $y <= $this->position->y + 1; $y++)
+            $collisionBoard = $board->ComputeCollisionBoard($this->color);
+
+            for($x = $this->position->x - 1; $x <= $this->position->x + 1; $x++)
             {
-                if (!Board::Out(new Position($x, $y)) && !$collisionBoard[$x][$y])
+                for($y = $this->position->y - 1; $y <= $this->position->y + 1; $y++)
                 {
-                    $position = new Position($x, $y);
-                    
-                    if (!$board->KingCheck($this->GetColor(), $position))
-                        $this->possibleCells[] = $position;
+                    if (!Board::Out(new Position($x, $y)) && !$collisionBoard[$x][$y])
+                    {
+                        $position = new Position($x, $y);
+
+                        if (!$board->IsUnsecuredCell($this->GetColor(), $position))
+                            $this->possibleCells[] = $position;
+                    }
                 }
             }
         }
